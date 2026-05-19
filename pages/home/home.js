@@ -325,7 +325,7 @@ Page({
         displayDate: dateStr,
         displayTime: fullDateTime,
         displayRemark: hasRemark ? bill.remark.trim() : '',
-        sortTime: bill.created_at ? new Date(bill.created_at).getTime() : Number(bill.date)
+        sortTime: Number(bill.date)
       });
       bill.type === 'income' ? groups[dateStr].dayIncome += amount : groups[dateStr].dayExpense += amount;
     });
