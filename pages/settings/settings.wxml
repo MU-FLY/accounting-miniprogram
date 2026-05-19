@@ -104,7 +104,7 @@
     <!-- 工具 -->
     <view class="menu-section-title">工具</view>
     <view class="menu-item" bindtap="openAutoSaveSetting">
-      <view class="menu-icon icon-save">🏦</view>
+      <view class="menu-icon icon-save">💰</view>
       <text class="menu-text">每日一攒</text>
       <view class="menu-status" wx:if="{{autoSaveEnabled}}">
         <view class="status-badge active">
