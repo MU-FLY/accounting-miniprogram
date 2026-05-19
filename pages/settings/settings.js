@@ -505,13 +505,6 @@ Page({
     
     this.setData({ todayAutoSaved: true });
     
-    // 静默提示（不打扰用户）
-    wx.showToast({
-      title: `已自动攒 ¥${amount}`,
-      icon: 'success',
-      duration: 2000
-    });
-    
     // 刷新统计数据
     this.loadLocalStats();
     
