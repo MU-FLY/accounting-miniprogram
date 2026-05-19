@@ -70,15 +70,14 @@ Page({
       const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
       
       if (today >= targetTime) {
-        // 时间已过，执行自动攒
+        // 时间已过，执行自动攒（内部会刷新数据）
         this.performAutoSave();
+        return;
       }
     }
     
-    // 延迟一点点确保存储完成，然后加载数据
-    setTimeout(() => {
-      this.loadDataAfterCheck();
-    }, 100);
+    // 不需要自动攒，直接加载数据
+    this.loadDataAfterCheck();
   },
 
   // 加载数据（自动攒检查完后调用）
@@ -115,6 +114,9 @@ Page({
     
     console.log('首页自动攒执行成功:', amount, '账单时间:', billTime.toLocaleString());
     console.log('当前账单总数:', localBills.length);
+    
+    // 直接刷新页面数据
+    this.loadLocalData();
   },
 
   loadLocalData() {
