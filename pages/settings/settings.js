@@ -99,7 +99,7 @@ Page({
       
       fs.writeFileSync(tempPath, jsonStr, 'utf8');
 
-      // 保存到用户相册/文件
+      // 尝试方式1: 分享文件（真机支持）
       wx.shareFileMessage({
         filePath: tempPath,
         fileName: fileName,
@@ -109,18 +109,19 @@ Page({
         },
         fail: (err) => {
           console.error('分享文件失败:', err);
-          // 尝试用另一种方式
-          this.saveFileAlternative(tempPath, fileName);
+          // 尝试方式2: 保存到磁盘（真机支持）
+          this.saveFileToDisk(tempPath, fileName, jsonStr);
         }
       });
     } catch (err) {
       console.error('导出失败:', err);
-      wx.showToast({ title: '导出失败', icon: 'none' });
+      // 最终备选：复制到剪贴板
+      this.copyToClipboard(jsonStr);
     }
   },
 
-  // 备选保存方式
-  saveFileAlternative(tempPath, fileName) {
+  // 保存到磁盘（真机支持）
+  saveFileToDisk(tempPath, fileName, jsonStr) {
     wx.saveFileToDisk({
       filePath: tempPath,
       success: () => {
@@ -129,18 +130,29 @@ Page({
       },
       fail: (err) => {
         console.error('保存到磁盘失败:', err);
-        // 最后尝试：复制到剪贴板
-        wx.setClipboardData({
-          data: JSON.stringify(wx.getStorageSync('localBills') || [], null, 2),
+        // 最终备选：复制到剪贴板
+        this.copyToClipboard(jsonStr);
+      }
+    });
+  },
+
+  // 复制到剪贴板（通用方案）
+  copyToClipboard(jsonStr) {
+    wx.setClipboardData({
+      data: jsonStr,
+      success: () => {
+        wx.showModal({
+          title: '导出成功',
+          content: '数据已复制到剪贴板。\n\n请粘贴到文本编辑器（如备忘录、微信文件传输助手）中保存为 .json 文件。',
+          showCancel: false,
           success: () => {
-            wx.showModal({
-              title: '导出提示',
-              content: '文件保存失败，已将数据复制到剪贴板。请粘贴到文本编辑器中保存为 .json 文件。',
-              showCancel: false
-            });
             this.closeExportModal();
           }
         });
+      },
+      fail: (err) => {
+        console.error('复制到剪贴板失败:', err);
+        wx.showToast({ title: '导出失败', icon: 'none' });
       }
     });
   },

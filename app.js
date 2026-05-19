@@ -1,7 +1,7 @@
 App({
   globalData: {
     userInfo: null,
-    apiBaseUrl: 'https://your-domain.com/api'
+    apiBaseUrl: 'https://www.flyboy.online/api'
   },
 
   onLaunch() {
