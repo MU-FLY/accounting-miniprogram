@@ -349,8 +349,6 @@
 .icon-about {
   background: #e0f2f1;
 }
-  text-align:center
-}
 
 .menu-text {
   flex: 1;
