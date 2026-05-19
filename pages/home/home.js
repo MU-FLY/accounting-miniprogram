@@ -111,11 +111,13 @@ Page({
     wx.setStorageSync('localBills', localBills);
     wx.setStorageSync('lastAutoSaveDate', todayStr);
     
-    console.log('首页自动攒执行成功:', amount);
+    console.log('首页自动攒执行成功:', amount, '账单时间:', billTime.toLocaleString());
+    console.log('当前账单总数:', localBills.length);
   },
 
   loadLocalData() {
     const localBills = wx.getStorageSync('localBills') || [];
+    console.log('loadLocalData 加载账单数:', localBills.length);
     if (localBills.length === 0) {
       this.setData({ bills: [], yearIncome: '0.00', yearExpense: '0.00', monthIncome: '0.00', monthExpense: '0.00', yearBalance: '0.00', monthBalance: '0.00', todayIncome: '0.00', todayExpense: '0.00', todayCount: 0 });
       return;
