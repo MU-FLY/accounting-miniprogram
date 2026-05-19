@@ -340,6 +340,14 @@
 
 .icon-official {
   background: #fce4ec;
+  padding: 0;
+  overflow: hidden;
+}
+
+.official-icon-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
 }
 
 .icon-logout {
