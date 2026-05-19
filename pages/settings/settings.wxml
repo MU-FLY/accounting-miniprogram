@@ -137,14 +137,22 @@
       <text class="menu-text">意见反馈</text>
       <text class="arrow-right">›</text>
     </view>
-    <view class="menu-item" bindtap="goAbout">
-      <view class="menu-icon">ℹ️</view>
-      <text class="menu-text">关于</text>
-      <text class="arrow-right">›</text>
-    </view>
     <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
       <view class="menu-icon">🚪</view>
       <text class="menu-text">退出登录</text>
+      <text class="arrow-right">›</text>
+    </view>
+
+    <!-- 关于 -->
+    <view class="menu-section-title">关于</view>
+    <view class="menu-item" bindtap="goAbout">
+      <view class="menu-icon">ℹ️</view>
+      <text class="menu-text">关于随手记</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="followOfficialAccount">
+      <view class="menu-icon">📢</view>
+      <text class="menu-text">关注公众号</text>
       <text class="arrow-right">›</text>
     </view>
   </view>

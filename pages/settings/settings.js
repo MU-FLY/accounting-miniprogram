@@ -1408,8 +1408,35 @@ Page({
   goAbout() {
     wx.showModal({
       title: '关于随手记',
-      content: 'Version 1.0.0\n简单好用的记账小程序',
+      content: 'Version 2.4.0\n简单好用的记账小程序',
       showCancel: false
+    });
+  },
+
+  // 关注公众号
+  followOfficialAccount() {
+    // 方式1: 如果已关联公众号，使用 official-account 组件
+    // 方式2: 打开公众号文章或页面
+    // 方式3: 提示用户搜索关注
+    
+    wx.showModal({
+      title: '关注公众号',
+      content: '请关注我们的公众号获取最新动态和使用技巧\n\n公众号：随手记记账',
+      confirmText: '复制名称',
+      cancelText: '知道了',
+      success: (res) => {
+        if (res.confirm) {
+          wx.setClipboardData({
+            data: '随手记记账',
+            success: () => {
+              wx.showToast({
+                title: '已复制公众号名称',
+                icon: 'success'
+              });
+            }
+          });
+        }
+      }
     });
   },
 
