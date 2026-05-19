@@ -138,9 +138,7 @@
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="followOfficialAccount">
-      <view class="menu-icon icon-official">
-        <image src="/images/official-account.png" mode="aspectFill" class="official-icon-img" />
-      </view>
+      <view class="menu-icon icon-official">📢</view>
       <text class="menu-text">关注公众号</text>
       <text class="arrow-right">›</text>
     </view>
