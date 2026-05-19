@@ -1,0 +1,323 @@
+.container {
+  height: 95vh;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+/* Chart Loading */
+.chart-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-section .chart-loading {
+  height: calc(50vh - 80rpx);
+}
+
+.bar-section .chart-loading {
+  height: calc(40vh - 40rpx);
+}
+
+.loading-spinner {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #4A90D9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* Year Navigation */
+.year-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 0 4rpx;
+  height: 52rpx;
+  box-sizing: border-box;
+}
+
+.nav-arrow {
+  font-size: 32rpx;
+  color: #999;
+  padding: 0 24rpx;
+}
+
+.year-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Type Switch Bar */
+.type-switch-bar {
+  display: flex;
+  margin: 0 60rpx 8rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+  height: 60rpx;
+  box-sizing: border-box;
+}
+
+.type-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #999;
+  line-height: 60rpx;
+}
+
+.type-btn.active {
+  background: #FF6B6B;
+  color: #fff;
+  font-weight: 600;
+}
+
+.type-btn.active[data-type="income"] {
+  background: #36e691;
+}
+
+/* Month Navigation */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 10rpx;
+  height: 44rpx;
+  box-sizing: border-box;
+}
+
+.month-title {
+  font-size: 26rpx;
+  color: #666;
+  margin: 0 20rpx;
+}
+
+/* Pie Chart Section */
+.pie-section {
+  margin: 0 20rpx 10rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  height: calc(50vh - 80rpx);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.pie-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.pie-chart-header {
+  height: 48rpx;
+  box-sizing: border-box;
+}
+
+.pie-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 48rpx;
+}
+
+.pie-chart-wrapper {
+  flex: 1;
+  width: 100%;
+  position: relative;
+}
+
+.pie-chart-wrapper ec-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Bar Chart Section */
+.bar-section {
+  margin: 0 20rpx 16rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 12rpx 20rpx 14rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  height: calc(43vh - 40rpx);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bar-chart-header {
+  height: 48rpx;
+  box-sizing: border-box;
+}
+
+.bar-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 48rpx;
+}
+
+.bar-chart-container {
+  height: calc(100% - 48rpx);
+  display: flex;
+}
+
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 16rpx;
+  width: 72rpx;
+  flex-shrink: 0;
+}
+
+.y-label {
+  font-size: 25rpx;
+  color: #333;
+}
+
+.bar-chart-area {
+  flex: 1;
+  position: relative;
+}
+
+.grid-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 0;
+}
+
+.grid-line {
+  width: 100%;
+  height: 1rpx;
+  background: #e0e0e0;
+}
+
+.bar-chart {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 100%;
+  padding: 0 4rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-value {
+  font-size: 25rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-8rpx) scale(0.85);
+  transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+}
+
+.bar-item.animate .bar-value {
+  opacity: 1;
+  transform: translateY(0) scale(0.85);
+}
+
+.bar-wrapper {
+  width: 24rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar {
+  width: 25rpx;
+  height: 0;
+  border-radius: 10rpx 10rpx 0 0;
+  transform-origin: bottom;
+}
+
+.bar-item.animate .bar {
+  transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bar-wrapper:hover .bar {
+  filter: brightness(1.1);
+}
+
+.bar-label {
+  font-size: 25rpx;
+  color: #333;
+  margin-top: 8rpx;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-8rpx) scale(0.85);
+  transition: opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s;
+}
+
+.bar-item.animate .bar-label {
+  opacity: 1;
+  transform: translateY(0) scale(0.85);
+}
+
+/* Staggered animation delays for each bar */
+.bar-item:nth-child(1) .bar { transition-delay: 0.05s; }
+.bar-item:nth-child(2) .bar { transition-delay: 0.10s; }
+.bar-item:nth-child(3) .bar { transition-delay: 0.15s; }
+.bar-item:nth-child(4) .bar { transition-delay: 0.20s; }
+.bar-item:nth-child(5) .bar { transition-delay: 0.25s; }
+.bar-item:nth-child(6) .bar { transition-delay: 0.30s; }
+.bar-item:nth-child(7) .bar { transition-delay: 0.35s; }
+.bar-item:nth-child(8) .bar { transition-delay: 0.40s; }
+.bar-item:nth-child(9) .bar { transition-delay: 0.45s; }
+.bar-item:nth-child(10) .bar { transition-delay: 0.50s; }
+.bar-item:nth-child(11) .bar { transition-delay: 0.55s; }
+.bar-item:nth-child(12) .bar { transition-delay: 0.60s; }
+
+.bar-item:nth-child(1) .bar-value { transition-delay: 0.35s; }
+.bar-item:nth-child(2) .bar-value { transition-delay: 0.40s; }
+.bar-item:nth-child(3) .bar-value { transition-delay: 0.45s; }
+.bar-item:nth-child(4) .bar-value { transition-delay: 0.50s; }
+.bar-item:nth-child(5) .bar-value { transition-delay: 0.55s; }
+.bar-item:nth-child(6) .bar-value { transition-delay: 0.60s; }
+.bar-item:nth-child(7) .bar-value { transition-delay: 0.65s; }
+.bar-item:nth-child(8) .bar-value { transition-delay: 0.70s; }
+.bar-item:nth-child(9) .bar-value { transition-delay: 0.75s; }
+.bar-item:nth-child(10) .bar-value { transition-delay: 0.80s; }
+.bar-item:nth-child(11) .bar-value { transition-delay: 0.85s; }
+.bar-item:nth-child(12) .bar-value { transition-delay: 0.90s; }
+
+/* Empty State */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #000000;
+  font-size: 28rpx;
+}

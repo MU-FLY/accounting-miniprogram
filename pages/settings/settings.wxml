@@ -1,0 +1,208 @@
+<view class="container">
+  <!-- User Card -->
+  <view class="card user-card">
+    <view class="user-info" wx:if="{{!userInfo}}" bindtap="showAuthModal">
+      <view class="avatar">
+        <text>👤</text>
+      </view>
+      <view class="user-detail">
+        <text class="user-name">点击登录</text>
+        <text class="user-sub">点击获取微信头像和昵称</text>
+      </view>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="user-info" wx:if="{{userInfo}}">
+      <view class="avatar">
+        <image src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+      </view>
+      <view class="user-detail">
+        <text class="user-name">{{userInfo.nickName}}</text>
+        <text class="user-sub">已登录</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Auth Modal -->
+  <view class="auth-modal {{showAuth ? 'show' : ''}}">
+    <view class="auth-mask" bindtap="hideAuthModal"></view>
+    <view class="auth-content">
+      <view class="auth-title">授权获取微信信息</view>
+      <view class="auth-desc">请完善您的头像和昵称</view>
+      <view class="auth-form">
+        <button class="auth-avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+          <view class="auth-avatar">
+            <text wx:if="{{!userInfo.avatarUrl}}">👤</text>
+            <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+          </view>
+          <text class="auth-avatar-text">点击获取头像</text>
+        </button>
+        <input type="nickname" class="auth-nickname-input" placeholder="点击获取微信昵称" value="{{userInfo.nickName}}" bindblur="onNicknameChange" bindinput="onNicknameInput" />
+      </view>
+      <view class="auth-buttons">
+        <button class="auth-cancel" bindtap="hideAuthModal">
+          <text class="btn-icon">✕</text>
+          <text>取消登录</text>
+        </button>
+        <button class="auth-confirm" bindtap="confirmAuth">
+          <text class="btn-icon">✓</text>
+          <text>确定登录</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Stats Grid -->
+  <view class="card stats-grid">
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value">{{billCount}}</text>
+        <text class="stats-label">记账笔数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value">{{totalDays}}</text>
+        <text class="stats-label">记账天数</text>
+      </view>
+    </view>
+    <view class="stats-divider"></view>
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value text-income">{{totalIncome}}</text>
+        <text class="stats-label">累计收入</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-expense">{{totalExpense}}</text>
+        <text class="stats-label">累计支出</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Menu List -->
+  <view class="card menu-list">
+    <view class="menu-item" bindtap="clearData">
+      <view class="menu-icon">🗑️</view>
+      <text class="menu-text">清除本地缓存</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="syncData">
+      <view class="menu-icon">☁️</view>
+      <text class="menu-text">同步云端数据</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="uploadToCloud">
+      <view class="menu-icon">⬆️</view>
+      <text class="menu-text">一键上传云端</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item menu-item-danger" bindtap="resetAllData">
+      <view class="menu-icon">⚠️</view>
+      <text class="menu-text">一键清理云端</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="goFeedback">
+      <view class="menu-icon">💬</view>
+      <text class="menu-text">意见反馈</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
+      <view class="menu-icon">🚪</view>
+      <text class="menu-text">退出登录</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="openAutoSaveSetting">
+      <view class="menu-icon">💰</view>
+      <text class="menu-text">每日一攒</text>
+      <view class="menu-status" wx:if="{{autoSaveEnabled}}">
+        <view class="status-badge active">
+          <text class="status-dot"></text>
+          <text class="status-text">已开启</text>
+        </view>
+      </view>
+      <view class="menu-status" wx:if="{{!autoSaveEnabled}}">
+        <view class="status-badge">
+          <text class="status-text">未开启</text>
+        </view>
+      </view>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="goAbout">
+      <view class="menu-icon">ℹ️</view>
+      <text class="menu-text">关于</text>
+      <text class="arrow-right">›</text>
+    </view>
+  </view>
+
+  <!-- Progress Modal -->
+  <view class="progress-modal {{showProgress ? 'show' : ''}}">
+    <view class="progress-mask"></view>
+    <view class="progress-content">
+      <view class="progress-title">{{progressTitle}}</view>
+      <view class="progress-bar-container">
+        <view class="progress-bar-bg">
+          <view class="progress-bar-fill" style="width: {{progressPercent}}%;"></view>
+        </view>
+        <view class="progress-percent">{{progressPercent}}%</view>
+      </view>
+      <view class="progress-text">{{progressText}}</view>
+    </view>
+  </view>
+
+
+
+  <!-- Auto Save Modal -->
+  <view class="auto-save-modal {{showAutoSaveModal ? 'show' : ''}}">
+    <view class="auto-save-mask" bindtap="closeAutoSaveModal"></view>
+    <view class="auto-save-modal-content">
+      <view class="auto-save-modal-header">
+        <view class="modal-icon">💰</view>
+        <view class="auto-save-modal-title">每日一攒</view>
+        <view class="modal-subtitle" wx:if="{{!autoSaveEnabled}}">设置自动攒入金额和时间</view>
+        <view class="modal-subtitle" wx:if="{{autoSaveEnabled}}">当前设置：¥{{autoSaveAmount}} · {{autoSaveTime}}</view>
+      </view>
+      <view class="auto-save-form">
+        <view class="form-item">
+          <text class="form-label">每日攒入金额</text>
+          <view class="form-input-wrap">
+            <text class="form-prefix">¥</text>
+            <input class="form-input" type="digit" value="{{autoSaveAmount}}" bindinput="setAutoSaveAmount" placeholder="请输入金额"/>
+          </view>
+        </view>
+        <view class="form-item">
+          <text class="form-label">执行时间</text>
+          <picker mode="time" value="{{autoSaveTime}}" bindchange="setAutoSaveTime">
+            <view class="form-picker">
+              <text class="picker-icon">🕐</text>
+              <text class="picker-value">{{autoSaveTime}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class="auto-save-modal-buttons">
+        <button class="modal-btn modal-cancel" bindtap="closeAutoSaveModal">取消</button>
+        <button class="modal-btn modal-confirm" bindtap="saveAutoSaveSettings">保存设置</button>
+      </view>
+      <view class="auto-save-close" wx:if="{{autoSaveEnabled}}">
+        <text class="close-text" bindtap="disableAutoSave">关闭每日一攒</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Feedback Modal -->
+  <view class="feedback-modal {{showFeedback ? 'show' : ''}}">
+    <view class="feedback-mask" bindtap="hideFeedbackModal"></view>
+    <view class="feedback-content">
+      <view class="feedback-title">意见反馈</view>
+      <view class="feedback-body">
+        <text class="feedback-text">如有问题或建议，请联系开发者</text>
+        <text class="feedback-email">邮箱：your-email@example.com</text>
+      </view>
+      <view class="feedback-buttons">
+        <button class="feedback-confirm" bindtap="hideFeedbackModal">
+          <text>知道了</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Version -->
+  <view class="version">版本 2.3.1</view>
+</view>

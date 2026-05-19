@@ -1,0 +1,80 @@
+<view class="add-page">
+  <!-- Header -->
+  <view class="add-header">
+    <view class="type-switch">
+      <view class="type-btn {{type === 'expense' ? 'active' : ''}}" bindtap="switchType" data-type="expense">
+        支出
+      </view>
+      <view class="type-btn {{type === 'income' ? 'active' : ''}}" bindtap="switchType" data-type="income">
+        收入
+      </view>
+    </view>
+    <view class="amount-display">
+      <text class="currency">¥</text>
+      <text class="amount">{{amount}}</text>
+    </view>
+  </view>
+
+  <!-- Category Grid -->
+  <view class="category-section">
+    <view class="category-grid">
+      <view class="category-item {{selectedCategory === item.name ? 'selected' : ''}}"
+            wx:for="{{categories}}" wx:key="name"
+            bindtap="selectCategory" data-name="{{item.name}}">
+        <view class="category-icon" style="background: {{item.color}}20; color: {{item.color}};">
+          <text class="icon-text">{{item.icon}}</text>
+        </view>
+        <text class="category-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Note & Date -->
+  <view class="info-section">
+    <view class="info-row">
+      <text class="info-label">备注</text>
+      <input class="info-input" placeholder="添加备注..." value="{{note}}" bindinput="onNoteInput" />
+    </view>
+    <view class="info-row">
+      <text class="info-label">日期</text>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="info-value">{{date}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- Keyboard -->
+  <view class="keyboard">
+    <view class="keyboard-row">
+      <view class="key" bindtap="inputNumber" data-num="7">7</view>
+      <view class="key" bindtap="inputNumber" data-num="8">8</view>
+      <view class="key" bindtap="inputNumber" data-num="9">9</view>
+      <view class="key key-date" bindtap="goBack">
+        <text class="key-text">返回</text>
+      </view>
+    </view>
+    <view class="keyboard-row">
+      <view class="key" bindtap="inputNumber" data-num="4">4</view>
+      <view class="key" bindtap="inputNumber" data-num="5">5</view>
+      <view class="key" bindtap="inputNumber" data-num="6">6</view>
+      <view class="key key-action" bindtap="inputNumber" data-num="clear">
+        <text class="key-text">清空</text>
+      </view>
+    </view>
+    <view class="keyboard-row">
+      <view class="key" bindtap="inputNumber" data-num="1">1</view>
+      <view class="key" bindtap="inputNumber" data-num="2">2</view>
+      <view class="key" bindtap="inputNumber" data-num="3">3</view>
+      <view class="key key-action" bindtap="inputNumber" data-num="back">
+        <text class="key-text">←</text>
+      </view>
+    </view>
+    <view class="keyboard-row">
+      <view class="key" bindtap="inputNumber" data-num=".">.</view>
+      <view class="key" bindtap="inputNumber" data-num="0">0</view>
+      <view class="key key-submit" bindtap="submit">
+        <text class="key-text">完成</text>
+      </view>
+    </view>
+  </view>
+</view>

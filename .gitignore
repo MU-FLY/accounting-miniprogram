@@ -1,0 +1,24 @@
+# 微信开发者工具
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.log
+
+# 构建产物
+dist/
+build/
+
+# 本地数据文件（不提交到GitHub，保护隐私）
+data.json
+*.csv
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 敏感配置文件（包含密钥、密码等）
+.env
+index.js
+

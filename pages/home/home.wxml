@@ -1,0 +1,168 @@
+<view class="container">
+  <!-- Header Card -->
+  <view class="header-card">
+    <!-- Month Navigation -->
+    <view class="month-nav">
+      <text class="nav-arrow" bindtap="prevMonth">‹</text>
+      <text class="month-title">{{currentYear}}年{{currentMonth}}月</text>
+      <text class="nav-arrow" bindtap="nextMonth">›</text>
+    </view>
+
+    <!-- Year Summary -->
+    <view class="summary-row">
+      <view class="summary-left">
+        <text class="summary-label">年度结余</text>
+        <text class="summary-amount {{yearBalanceClass}}">{{yearBalanceSign}}¥{{yearBalance}}</text>
+      </view>
+      <view class="summary-right">
+        <view class="income-row">
+          <text class="dot income-dot"></text>
+          <text class="summary-label">收入</text>
+          <text class="income-amount">¥{{yearIncome}}</text>
+        </view>
+        <view class="expense-row">
+          <text class="dot expense-dot"></text>
+          <text class="summary-label">支出</text>
+          <text class="expense-amount">¥{{yearExpense}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Month Summary -->
+    <view class="summary-row">
+      <view class="summary-left">
+        <text class="summary-label">本月结余</text>
+        <text class="summary-amount {{monthBalanceClass}}">{{monthBalanceSign}}¥{{monthBalance}}</text>
+      </view>
+      <view class="summary-right">
+        <view class="income-row">
+          <text class="dot income-dot"></text>
+          <text class="summary-label">收入</text>
+          <text class="income-amount">¥{{monthIncome}}</text>
+        </view>
+        <view class="expense-row">
+          <text class="dot expense-dot"></text>
+          <text class="summary-label">支出</text>
+          <text class="expense-amount">¥{{monthExpense}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Today Stats -->
+    <view class="today-stats">
+      <view class="stat-item">
+        <text class="stat-num">{{todayCount}}</text>
+        <text class="stat-label">笔账单</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num expense">¥{{todayExpense}}</text>
+        <text class="stat-label">今日支出</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num income">¥{{todayIncome}}</text>
+        <text class="stat-label">今日收入</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item daily-save" wx:if="{{dailySaveAmount > 0}}">
+        <text class="stat-num save">¥{{dailySaveAmount}}</text>
+        <text class="stat-label">每日一攒</text>
+      </view>
+      <view class="stat-item" bindtap="goStats" wx:if="{{dailySaveAmount === 0}}">
+        <text class="stat-num">›</text>
+        <text class="stat-label">详情</text>
+      </view>
+    </view>
+
+
+  </view>
+
+  <!-- Error Message -->
+  <view class="error-msg" wx:if="{{errorMsg}}">
+    <text>{{errorMsg}}</text>
+  </view>
+
+  <!-- 操作提示 -->
+  <view class="tip-bar" wx:if="{{!isBatchMode && bills.length > 0}}">
+    <text class="tip-icon">💡</text>
+    <text class="tip-text">长按账单可进入批量删除模式</text>
+  </view>
+
+  <!-- Batch Delete Toolbar -->
+  <view class="batch-toolbar" wx:if="{{isBatchMode}}">
+    <view class="batch-left">
+      <view class="batch-select-all" bindtap="toggleSelectAll">
+        <view class="checkbox {{isAllSelected ? 'checked' : ''}}">
+          <text class="check-icon" wx:if="{{isAllSelected}}">✔</text>
+        </view>
+        <text class="batch-select-text">全选</text>
+      </view>
+      <text class="batch-info">已选择 {{selectedCount}} 项</text>
+    </view>
+    <view class="batch-actions">
+      <text class="batch-cancel" bindtap="cancelBatchMode">取消</text>
+      <text class="batch-delete" bindtap="executeBatchDelete">删除</text>
+    </view>
+  </view>
+  
+  <!-- Delete Warning -->
+  <view class="delete-warning" wx:if="{{isBatchMode}}">
+    <text class="warning-icon">⚠️</text>
+    <text class="warning-text">删除操作将同时清除本地和云端数据，且无法恢复</text>
+  </view>
+
+  <!-- Bill List -->
+  <view class="bill-list" wx:if="{{bills.length > 0}}">
+    <block wx:for="{{bills}}" wx:key="date" wx:for-item="group">
+      <!-- Date Header -->
+      <view class="date-header">
+        <text class="date-title">{{group.isToday ? '今天' : group.dateStr}}</text>
+        <view class="date-summary">
+          <text class="date-expense" wx:if="{{group.dayExpense > 0}}">支出¥{{group.dayExpenseStr}}</text>
+          <text class="date-income" wx:if="{{group.dayIncome > 0}}">收入¥{{group.dayIncomeStr}}</text>
+        </view>
+      </view>
+
+      <!-- Bill Items -->
+      <view class="bill-item {{isBatchMode ? 'batch-mode' : ''}} {{bill.selected ? 'selected' : ''}}" 
+            wx:for="{{group.items}}" 
+            wx:key="date" 
+            wx:for-item="bill"
+            data-date="{{bill.date}}"
+            bindlongpress="onBillLongPress"
+            bindtap="onBillSelect">
+        <view class="bill-checkbox" wx:if="{{isBatchMode}}">
+          <view class="checkbox {{bill.selected ? 'checked' : ''}}">
+            <text class="check-icon" wx:if="{{bill.selected}}">✔</text>
+          </view>
+        </view>
+        <view class="bill-content">
+          <view class="bill-icon" style="background: {{bill.iconBg}}; color: {{bill.iconColor}};">
+          <text class="icon-text">{{bill.icon}}</text>
+        </view>
+          <view class="bill-info">
+            <text class="bill-category">{{bill.categoryName}}</text>
+            <text class="bill-remark" wx:if="{{bill.displayRemark}}">{{bill.displayRemark}}</text>
+            <text class="bill-time">{{bill.displayTime}}</text>
+          </view>
+          <view class="bill-amount">
+            <text class="amount {{bill.amountClass}}">{{bill.amountSign}}{{bill.amountStr}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- Empty State -->
+  <view class="empty-state" wx:if="{{bills.length === 0 && !loading}}">
+    <text class="empty-icon">📝</text>
+    <text class="empty-text">本月暂无账单</text>
+    <text class="empty-subtext">点击右下角 + 开始记账</text>
+  </view>
+
+  <!-- Add Button -->
+  <view class="add-btn" bindtap="goAdd">
+    <text class="add-icon">+</text>
+  </view>
+</view>

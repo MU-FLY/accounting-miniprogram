@@ -1,0 +1,76 @@
+<view class="container">
+
+  <!-- Year Navigation -->
+  <view class="year-nav">
+    <text class="nav-arrow" bindtap="prevYear">‹</text>
+    <text class="year-title">{{currentYear}}年</text>
+    <text class="nav-arrow" bindtap="nextYear">›</text>
+  </view>
+
+  <!-- Type Switch -->
+  <view class="type-switch-bar">
+    <view class="type-btn {{type === 'expense' ? 'active' : ''}}" bindtap="switchType" data-type="expense">支出</view>
+    <view class="type-btn {{type === 'income' ? 'active' : ''}}" bindtap="switchType" data-type="income">收入</view>
+  </view>
+
+  <!-- Month Selector -->
+  <view class="month-nav">
+    <text class="nav-arrow" bindtap="prevMonth">‹</text>
+    <text class="month-title">{{currentYear}}年{{currentMonth}}月</text>
+    <text class="nav-arrow" bindtap="nextMonth">›</text>
+  </view>
+
+  <!-- Pie Chart Section -->
+  <view class="pie-section">
+    <view class="chart-loading" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+    <view class="pie-content" wx:if="{{!loading && categoryData.length > 0}}">
+      <view class="pie-chart-header">
+        <text class="pie-title">每月分类</text>
+      </view>
+      <view class="pie-chart-wrapper">
+        <ec-canvas id="pieChart" canvas-id="pie-chart" ec="{{ ec }}"></ec-canvas>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{!loading && categoryData.length === 0}}">
+      <text>暂无数据</text>
+    </view>
+  </view>
+
+  <!-- Bar Chart Section -->
+  <view class="bar-section">
+    <view class="chart-loading" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+    <view class="empty empty-bar" wx:if="{{!loading && monthlyData.length === 0}}">
+      <text>暂无数据</text>
+    </view>
+    <view class="bar-content" wx:if="{{!loading && monthlyData.length > 0}}">
+      <view class="bar-chart-header">
+        <text class="bar-title">全年趋势</text>
+      </view>
+      <view class="bar-chart-container">
+        <view class="y-axis">
+          <text class="y-label" wx:for="{{yAxisLabels}}" wx:key="index">{{item}}</text>
+        </view>
+        <view class="bar-chart-area">
+          <view class="grid-lines">
+            <view class="grid-line" wx:for="{{yAxisLabels}}" wx:key="index"></view>
+          </view>
+          <view class="bar-chart">
+            <view class="bar-item {{barAnimate ? 'animate' : ''}}" wx:for="{{monthlyData}}" wx:key="month">
+              <view class="bar-value" wx:if="{{item.value > 0}}">{{item.valueStr}}</view>
+              <view class="bar-wrapper">
+                <view class="bar {{barAnimate ? 'animate' : ''}}" style="height: {{item.barHeight}}rpx; background: {{item.barColor}};"></view>
+              </view>
+              <text class="bar-label">{{item.month}}月</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
