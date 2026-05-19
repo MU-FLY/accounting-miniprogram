@@ -530,8 +530,17 @@ Page({
 
   // 请求订阅消息权限
   requestSubscribeMessage() {
+    // 订阅消息模板ID需要在微信公众平台申请
+    // 如需使用，请替换为实际的模板ID
+    const tmplIds = [];
+    
+    if (tmplIds.length === 0) {
+      console.log('订阅消息模板ID未配置，跳过订阅消息请求');
+      return;
+    }
+    
     wx.requestSubscribeMessage({
-      tmplIds: ['YOUR_TEMPLATE_ID_1', 'YOUR_TEMPLATE_ID_2'],
+      tmplIds: tmplIds,
       success: (res) => {
         console.log('订阅消息授权结果:', res);
         // 保存授权状态

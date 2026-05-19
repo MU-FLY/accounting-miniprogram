@@ -261,7 +261,7 @@
       <view class="feedback-title">意见反馈</view>
       <view class="feedback-body">
         <text class="feedback-text">如有问题或建议，请联系开发者</text>
-        <text class="feedback-email">邮箱：your-email@example.com</text>
+        <text class="feedback-email">邮箱：501148193@qq.com</text>
       </view>
       <view class="feedback-buttons">
         <button class="feedback-confirm" bindtap="hideFeedbackModal">
