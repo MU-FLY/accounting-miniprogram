@@ -26,7 +26,9 @@ Page({
     showImportModal: false,
     importFormatHint: '',
     // 公众号
-    showOfficialModal: false
+    showOfficialModal: false,
+    // 视频号
+    showVideoModal: false
   },
 
   onLoad() {
@@ -1437,6 +1439,31 @@ Page({
           duration: 2000
         });
         this.closeOfficialModal();
+      }
+    });
+  },
+
+  // 关注视频号
+  followVideoAccount() {
+    this.setData({ showVideoModal: true });
+  },
+
+  // 关闭视频号弹窗
+  closeVideoModal() {
+    this.setData({ showVideoModal: false });
+  },
+
+  // 复制视频号名称
+  copyVideoName() {
+    wx.setClipboardData({
+      data: '慕学长记账簿',
+      success: () => {
+        wx.showToast({
+          title: '已复制，请搜索关注',
+          icon: 'none',
+          duration: 2000
+        });
+        this.closeVideoModal();
       }
     });
   },

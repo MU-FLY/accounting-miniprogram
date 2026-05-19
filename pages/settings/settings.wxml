@@ -142,6 +142,11 @@
       <text class="menu-text">关注公众号</text>
       <text class="arrow-right">›</text>
     </view>
+    <view class="menu-item" bindtap="followVideoAccount">
+      <view class="menu-icon icon-video">🎬</view>
+      <text class="menu-text">关注视频号</text>
+      <text class="arrow-right">›</text>
+    </view>
     <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
       <view class="menu-icon icon-logout">🚪</view>
       <text class="menu-text">退出登录</text>
@@ -294,6 +299,25 @@
       <view class="official-buttons">
         <button class="modal-btn modal-cancel" bindtap="closeOfficialModal">关闭</button>
         <button class="modal-btn modal-confirm" bindtap="copyOfficialName">复制名称</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Video Account Modal -->
+  <view class="official-modal {{showVideoModal ? 'show' : ''}}">
+    <view class="official-mask" bindtap="closeVideoModal"></view>
+    <view class="official-content">
+      <view class="official-header">
+        <view class="official-title">关注视频号</view>
+        <view class="official-subtitle">长按识别二维码关注</view>
+      </view>
+      <view class="official-image-wrap">
+        <image src="/images/video-account.png" mode="aspectFit" class="official-qrcode" show-menu-by-longpress />
+      </view>
+      <view class="official-tip">长按图片识别二维码关注视频号</view>
+      <view class="official-buttons">
+        <button class="modal-btn modal-cancel" bindtap="closeVideoModal">关闭</button>
+        <button class="modal-btn modal-confirm" bindtap="copyVideoName">复制名称</button>
       </view>
     </view>
   </view>

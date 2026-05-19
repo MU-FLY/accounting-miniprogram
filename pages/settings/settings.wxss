@@ -568,7 +568,6 @@
 /* Version */
 .version {
   text-align: center;
-  padding: 40rpx;
   font-size: 24rpx;
   color: var(--text-tertiary);
 }
