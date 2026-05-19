@@ -1429,7 +1429,7 @@ Page({
   // 复制公众号名称
   copyOfficialName() {
     wx.setClipboardData({
-      data: 'MU-FLY',
+      data: '慕学长记账簿',
       success: () => {
         wx.showToast({
           title: '已复制，请搜索关注',

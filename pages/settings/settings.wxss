@@ -357,7 +357,7 @@
 .icon-about {
   background: #e0f2f1;
 }
-  text-align: center;
+  text-align:center
 }
 
 .menu-text {
