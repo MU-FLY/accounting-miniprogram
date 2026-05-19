@@ -46,7 +46,62 @@ Page({
   onShow() {
     const syncEnabled = wx.getStorageSync('syncEnabled');
     this.setData({ syncEnabled: !!syncEnabled });
+    
+    // 检查自动攒是否已执行
+    this.checkAutoSaveAndRefresh();
+    
     syncEnabled ? this.loadData() : this.loadLocalData();
+  },
+
+  // 检查自动攒并刷新数据
+  checkAutoSaveAndRefresh() {
+    const autoSaveEnabled = wx.getStorageSync('autoSaveEnabled');
+    if (!autoSaveEnabled) return;
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
+    
+    // 今天还没攒过，检查时间是否已过
+    if (lastAutoSaveDate !== todayStr) {
+      const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
+      const [hours, minutes] = autoSaveTime.split(':');
+      const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+      
+      if (today >= targetTime) {
+        // 时间已过，执行自动攒
+        this.performAutoSave();
+      }
+    }
+  },
+
+  // 执行自动攒（首页版本）
+  performAutoSave() {
+    const autoSaveAmount = wx.getStorageSync('autoSaveAmount') || '10';
+    const amount = parseFloat(autoSaveAmount);
+    if (!amount || amount <= 0) return;
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
+    const [hours, minutes] = autoSaveTime.split(':');
+    const billTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+    
+    const bill = {
+      date: billTime.getTime(),
+      amount: amount,
+      category: '每日一攒',
+      type: 'expense',
+      remark: '自动攒',
+      created_at: new Date().toISOString()
+    };
+    
+    const localBills = wx.getStorageSync('localBills') || [];
+    localBills.push(bill);
+    wx.setStorageSync('localBills', localBills);
+    wx.setStorageSync('lastAutoSaveDate', todayStr);
+    
+    console.log('首页自动攒执行成功:', amount);
   },
 
   loadLocalData() {
