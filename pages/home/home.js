@@ -43,36 +43,43 @@ Page({
     this.initAndLoad();
   },
 
-  onShow() {
+  async onShow() {
     const syncEnabled = wx.getStorageSync('syncEnabled');
     this.setData({ syncEnabled: !!syncEnabled });
     
-    // 检查自动攒是否已执行
-    this.checkAutoSaveAndRefresh();
+    // 先检查并执行自动攒，再加载数据
+    await this.checkAutoSaveAndRefresh();
     
     syncEnabled ? this.loadData() : this.loadLocalData();
   },
 
   // 检查自动攒并刷新数据
   checkAutoSaveAndRefresh() {
-    const autoSaveEnabled = wx.getStorageSync('autoSaveEnabled');
-    if (!autoSaveEnabled) return;
-    
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
-    
-    // 今天还没攒过，检查时间是否已过
-    if (lastAutoSaveDate !== todayStr) {
-      const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
-      const [hours, minutes] = autoSaveTime.split(':');
-      const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
-      
-      if (today >= targetTime) {
-        // 时间已过，执行自动攒
-        this.performAutoSave();
+    return new Promise((resolve) => {
+      const autoSaveEnabled = wx.getStorageSync('autoSaveEnabled');
+      if (!autoSaveEnabled) {
+        resolve();
+        return;
       }
-    }
+      
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
+      
+      // 今天还没攒过，检查时间是否已过
+      if (lastAutoSaveDate !== todayStr) {
+        const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
+        const [hours, minutes] = autoSaveTime.split(':');
+        const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+        
+        if (today >= targetTime) {
+          // 时间已过，执行自动攒
+          this.performAutoSave();
+        }
+      }
+      
+      resolve();
+    });
   },
 
   // 执行自动攒（首页版本）
