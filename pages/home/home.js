@@ -75,8 +75,10 @@ Page({
       }
     }
     
-    // 同步执行完后加载数据
-    this.loadDataAfterCheck();
+    // 延迟一点点确保存储完成，然后加载数据
+    setTimeout(() => {
+      this.loadDataAfterCheck();
+    }, 100);
   },
 
   // 加载数据（自动攒检查完后调用）
