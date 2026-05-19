@@ -78,9 +78,16 @@
 
   <!-- Menu List -->
   <view class="card menu-list">
-    <view class="menu-item" bindtap="clearData">
-      <view class="menu-icon">🗑️</view>
-      <text class="menu-text">清除本地缓存</text>
+    <!-- 数据管理 -->
+    <view class="menu-section-title">数据管理</view>
+    <view class="menu-item" bindtap="showExportModal">
+      <view class="menu-icon">📤</view>
+      <text class="menu-text">一键导出</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="showImportModal">
+      <view class="menu-icon">📥</view>
+      <text class="menu-text">一键导入</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="syncData">
@@ -93,21 +100,9 @@
       <text class="menu-text">一键上传云端</text>
       <text class="arrow-right">›</text>
     </view>
-    <view class="menu-item menu-item-danger" bindtap="resetAllData">
-      <view class="menu-icon">⚠️</view>
-      <text class="menu-text">一键清理云端</text>
-      <text class="arrow-right">›</text>
-    </view>
-    <view class="menu-item" bindtap="goFeedback">
-      <view class="menu-icon">💬</view>
-      <text class="menu-text">意见反馈</text>
-      <text class="arrow-right">›</text>
-    </view>
-    <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
-      <view class="menu-icon">🚪</view>
-      <text class="menu-text">退出登录</text>
-      <text class="arrow-right">›</text>
-    </view>
+
+    <!-- 工具 -->
+    <view class="menu-section-title">工具</view>
     <view class="menu-item" bindtap="openAutoSaveSetting">
       <view class="menu-icon">💰</view>
       <text class="menu-text">每日一攒</text>
@@ -124,9 +119,32 @@
       </view>
       <text class="arrow-right">›</text>
     </view>
+
+    <!-- 设置 -->
+    <view class="menu-section-title">设置</view>
+    <view class="menu-item" bindtap="clearData">
+      <view class="menu-icon">🗑️</view>
+      <text class="menu-text">清除本地缓存</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item menu-item-danger" bindtap="resetAllData">
+      <view class="menu-icon">⚠️</view>
+      <text class="menu-text">一键清理云端</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item" bindtap="goFeedback">
+      <view class="menu-icon">💬</view>
+      <text class="menu-text">意见反馈</text>
+      <text class="arrow-right">›</text>
+    </view>
     <view class="menu-item" bindtap="goAbout">
       <view class="menu-icon">ℹ️</view>
       <text class="menu-text">关于</text>
+      <text class="arrow-right">›</text>
+    </view>
+    <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
+      <view class="menu-icon">🚪</view>
+      <text class="menu-text">退出登录</text>
       <text class="arrow-right">›</text>
     </view>
   </view>
@@ -146,7 +164,57 @@
     </view>
   </view>
 
+  <!-- Export Modal -->
+  <view class="export-modal {{showExportModal ? 'show' : ''}}">
+    <view class="export-mask" bindtap="closeExportModal"></view>
+    <view class="export-content">
+      <view class="export-header">
+        <view class="modal-icon">📤</view>
+        <view class="export-title">导出数据</view>
+        <view class="export-subtitle">将账单数据导出为 JSON 文件</view>
+      </view>
+      <view class="export-info">
+        <view class="info-item">
+          <text class="info-label">导出内容</text>
+          <text class="info-value">账单记录、分类设置、每日一攒配置</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">文件格式</text>
+          <text class="info-value">JSON (.json)</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">编码格式</text>
+          <text class="info-value">UTF-8</text>
+        </view>
+      </view>
+      <view class="export-buttons">
+        <button class="modal-btn modal-cancel" bindtap="closeExportModal">取消</button>
+        <button class="modal-btn modal-confirm" bindtap="exportData">确认导出</button>
+      </view>
+    </view>
+  </view>
 
+  <!-- Import Modal -->
+  <view class="import-modal {{showImportModal ? 'show' : ''}}">
+    <view class="import-mask" bindtap="closeImportModal"></view>
+    <view class="import-content">
+      <view class="import-header">
+        <view class="modal-icon">📥</view>
+        <view class="import-title">导入数据</view>
+        <view class="import-subtitle">从 JSON 文件导入账单数据</view>
+      </view>
+      <view class="import-format">
+        <view class="format-title">📋 数据格式要求</view>
+        <scroll-view class="format-content" scroll-y>
+          <text class="format-text">{{importFormatHint}}</text>
+        </scroll-view>
+      </view>
+      <view class="import-buttons">
+        <button class="modal-btn modal-cancel" bindtap="closeImportModal">取消</button>
+        <button class="modal-btn modal-confirm" bindtap="chooseAndImportFile">选择文件导入</button>
+      </view>
+    </view>
+  </view>
 
   <!-- Auto Save Modal -->
   <view class="auto-save-modal {{showAutoSaveModal ? 'show' : ''}}">
@@ -204,5 +272,5 @@
   </view>
 
   <!-- Version -->
-  <view class="version">版本 2.3.1</view>
+  <view class="version">版本 2.4.0</view>
 </view>

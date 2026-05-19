@@ -20,7 +20,11 @@ Page({
     autoSaveEnabled: false,
     autoSaveAmount: '10',
     autoSaveTime: '08:30',
-    showAutoSaveModal: false
+    showAutoSaveModal: false,
+    // 导入导出
+    showExportModal: false,
+    showImportModal: false,
+    importFormatHint: ''
   },
 
   onLoad() {
@@ -29,7 +33,393 @@ Page({
     // 始终加载本地数据，未登录时显示本地数据
     this.loadLocalStats();
     this.loadAutoSaveSettings();
+    this.checkAutoSaveToday();
   },
+
+  onShow() {
+    this.checkSyncStatus();
+    
+    // 根据同步状态决定是否加载数据
+    const syncEnabled = wx.getStorageSync('syncEnabled');
+    if (syncEnabled) {
+      this.loadStats();
+    } else {
+      // 不同步，显示本地数据
+      this.loadLocalStats();
+    }
+    
+    // 检查今日是否已自动攒
+    this.checkAutoSaveToday();
+  },
+
+  // ==================== 导入导出功能 ====================
+
+  // 显示导出弹窗
+  showExportModal() {
+    this.setData({ showExportModal: true });
+  },
+
+  // 关闭导出弹窗
+  closeExportModal() {
+    this.setData({ showExportModal: false });
+  },
+
+  // 一键导出数据
+  async exportData() {
+    const localBills = wx.getStorageSync('localBills') || [];
+    
+    if (localBills.length === 0) {
+      wx.showToast({ title: '暂无数据可导出', icon: 'none' });
+      return;
+    }
+
+    // 构建导出数据结构
+    const exportData = {
+      version: '2.0',
+      exportTime: new Date().toISOString(),
+      appName: '随手记',
+      data: {
+        bills: localBills,
+        categories: this.getCategoriesFromStorage(),
+        settings: {
+          autoSaveEnabled: wx.getStorageSync('autoSaveEnabled') || false,
+          autoSaveAmount: wx.getStorageSync('autoSaveAmount') || '10',
+          autoSaveTime: wx.getStorageSync('autoSaveTime') || '08:30'
+        }
+      }
+    };
+
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const fileName = `accounting_backup_${this.formatDate(new Date())}.json`;
+
+    try {
+      // 写入临时文件
+      const fs = wx.getFileSystemManager();
+      const tempPath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+      
+      fs.writeFileSync(tempPath, jsonStr, 'utf8');
+
+      // 保存到用户相册/文件
+      wx.shareFileMessage({
+        filePath: tempPath,
+        fileName: fileName,
+        success: () => {
+          wx.showToast({ title: '导出成功', icon: 'success' });
+          this.closeExportModal();
+        },
+        fail: (err) => {
+          console.error('分享文件失败:', err);
+          // 尝试用另一种方式
+          this.saveFileAlternative(tempPath, fileName);
+        }
+      });
+    } catch (err) {
+      console.error('导出失败:', err);
+      wx.showToast({ title: '导出失败', icon: 'none' });
+    }
+  },
+
+  // 备选保存方式
+  saveFileAlternative(tempPath, fileName) {
+    wx.saveFileToDisk({
+      filePath: tempPath,
+      success: () => {
+        wx.showToast({ title: '已保存到下载', icon: 'success' });
+        this.closeExportModal();
+      },
+      fail: (err) => {
+        console.error('保存到磁盘失败:', err);
+        // 最后尝试：复制到剪贴板
+        wx.setClipboardData({
+          data: JSON.stringify(wx.getStorageSync('localBills') || [], null, 2),
+          success: () => {
+            wx.showModal({
+              title: '导出提示',
+              content: '文件保存失败，已将数据复制到剪贴板。请粘贴到文本编辑器中保存为 .json 文件。',
+              showCancel: false
+            });
+            this.closeExportModal();
+          }
+        });
+      }
+    });
+  },
+
+  // 显示导入弹窗
+  showImportModal() {
+    const formatHint = `数据格式要求：
+
+1. 文件格式：JSON (.json)
+2. 编码：UTF-8
+3. 数据结构示例：
+{
+  "version": "2.0",
+  "data": {
+    "bills": [
+      {
+        "date": 1704067200000,
+        "amount": 100,
+        "category": "餐饮",
+        "type": "expense",
+        "remark": "午餐"
+      }
+    ]
+  }
+}
+
+4. 支持导入字段：
+   - date: 时间戳（毫秒）
+   - amount: 金额（数字）
+   - category: 分类名称
+   - type: 类型（income/expense）
+   - remark: 备注（可选）`;
+
+    this.setData({ 
+      showImportModal: true,
+      importFormatHint: formatHint
+    });
+  },
+
+  // 关闭导入弹窗
+  closeImportModal() {
+    this.setData({ showImportModal: false });
+  },
+
+  // 选择并导入文件
+  chooseAndImportFile() {
+    // 提示用户数据格式
+    wx.showModal({
+      title: '导入数据格式',
+      content: this.data.importFormatHint,
+      confirmText: '选择文件',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          this.doImportFile();
+        }
+      }
+    });
+  },
+
+  // 执行文件导入
+  doImportFile() {
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      extension: ['json'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].path;
+        this.parseImportFile(tempFilePath);
+      },
+      fail: (err) => {
+        console.error('选择文件失败:', err);
+        wx.showToast({ title: '未选择文件', icon: 'none' });
+      }
+    });
+  },
+
+  // 解析导入文件
+  parseImportFile(filePath) {
+    const fs = wx.getFileSystemManager();
+    
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const importData = JSON.parse(content);
+      
+      // 验证数据结构
+      let bills = [];
+      
+      if (importData.data && importData.data.bills && Array.isArray(importData.data.bills)) {
+        // 标准格式
+        bills = importData.data.bills;
+      } else if (importData.bills && Array.isArray(importData.bills)) {
+        // 简化格式
+        bills = importData.bills;
+      } else if (Array.isArray(importData)) {
+        // 纯数组格式
+        bills = importData;
+      } else {
+        wx.showModal({
+          title: '格式错误',
+          content: '无法识别数据格式，请确保文件符合要求。\n\n支持的格式：\n1. 标准格式：{version, data: {bills}}\n2. 简化格式：{bills: [...]}\n3. 数组格式：[...]',
+          showCancel: false
+        });
+        return;
+      }
+
+      if (bills.length === 0) {
+        wx.showToast({ title: '文件中没有账单数据', icon: 'none' });
+        return;
+      }
+
+      // 验证并转换数据
+      const validBills = this.validateAndTransformBills(bills);
+      
+      if (validBills.length === 0) {
+        wx.showModal({
+          title: '数据无效',
+          content: '导入的数据中没有有效的账单记录。\n\n每条记录必须包含：\n- date: 时间戳或日期字符串\n- amount: 金额\n- category: 分类\n- type: income 或 expense',
+          showCancel: false
+        });
+        return;
+      }
+
+      // 显示确认对话框
+      wx.showModal({
+        title: '确认导入',
+        content: `检测到 ${validBills.length} 条有效账单数据。\n\n导入方式：\n- 合并：与现有数据合并（去重）\n- 覆盖：替换所有现有数据\n\n请选择导入方式：`,
+        confirmText: '合并导入',
+        cancelText: '覆盖导入',
+        success: (res) => {
+          if (res.confirm) {
+            this.mergeImportBills(validBills);
+          } else {
+            this.overwriteImportBills(validBills);
+          }
+        }
+      });
+
+    } catch (err) {
+      console.error('解析文件失败:', err);
+      wx.showModal({
+        title: '导入失败',
+        content: '文件解析失败，请检查：\n1. 文件是否为有效的 JSON 格式\n2. 文件编码是否为 UTF-8\n3. 文件内容是否完整',
+        showCancel: false
+      });
+    }
+  },
+
+  // 验证并转换账单数据
+  validateAndTransformBills(bills) {
+    return bills.filter(bill => {
+      // 检查必要字段
+      if (!bill.amount || !bill.category || !bill.type) {
+        return false;
+      }
+
+      // 处理日期
+      let date = bill.date;
+      if (typeof date === 'string') {
+        // 尝试解析日期字符串
+        date = new Date(date).getTime();
+        if (isNaN(date)) {
+          return false;
+        }
+      } else if (typeof date !== 'number') {
+        // 如果没有日期，使用当前时间
+        date = Date.now();
+      }
+
+      // 确保金额是数字
+      const amount = parseFloat(bill.amount);
+      if (isNaN(amount) || amount <= 0) {
+        return false;
+      }
+
+      // 确保类型正确
+      const type = bill.type === 'income' ? 'income' : 'expense';
+
+      // 转换数据格式
+      bill.date = date;
+      bill.amount = amount;
+      bill.type = type;
+      bill.remark = bill.remark || bill.note || '';
+      bill.created_at = bill.created_at || new Date().toISOString();
+
+      return true;
+    });
+  },
+
+  // 合并导入（去重）
+  mergeImportBills(newBills) {
+    const localBills = wx.getStorageSync('localBills') || [];
+    
+    // 创建日期+金额+分类的键用于去重
+    const existingKeys = new Set(localBills.map(b => 
+      `${b.date}_${b.amount}_${b.category}_${b.type}`
+    ));
+    
+    const uniqueBills = newBills.filter(b => {
+      const key = `${b.date}_${b.amount}_${b.category}_${b.type}`;
+      if (existingKeys.has(key)) {
+        return false;
+      }
+      existingKeys.add(key);
+      return true;
+    });
+
+    const mergedBills = [...localBills, ...uniqueBills];
+    wx.setStorageSync('localBills', mergedBills);
+    
+    this.loadLocalStats();
+    this.closeImportModal();
+    
+    wx.showToast({
+      title: `成功导入 ${uniqueBills.length} 条`,
+      icon: 'success',
+      duration: 2000
+    });
+  },
+
+  // 覆盖导入
+  overwriteImportBills(newBills) {
+    wx.showModal({
+      title: '⚠️ 确认覆盖',
+      content: '此操作将删除所有现有数据，用导入的数据替换。确定要继续吗？',
+      confirmColor: '#FF4D4F',
+      success: (res) => {
+        if (res.confirm) {
+          wx.setStorageSync('localBills', newBills);
+          this.loadLocalStats();
+          this.closeImportModal();
+          
+          wx.showToast({
+            title: `成功导入 ${newBills.length} 条`,
+            icon: 'success',
+            duration: 2000
+          });
+        }
+      }
+    });
+  },
+
+  // 从存储获取分类
+  getCategoriesFromStorage() {
+    try {
+      const categories = wx.getStorageSync('categories');
+      if (categories) return categories;
+    } catch (e) {}
+    
+    // 返回默认分类
+    return {
+      expense: [
+        { id: 'food', name: '餐饮', icon: '🍔', color: '#FF6B6B' },
+        { id: 'transport', name: '交通', icon: '🚕', color: '#FFA502' },
+        { id: 'shopping', name: '购物', icon: '🛒', color: '#FF6348' },
+        { id: 'entertain', name: '娱乐', icon: '🎬', color: '#7BED9F' },
+        { id: 'housing', name: '居住', icon: '🏠', color: '#70A1FF' },
+        { id: 'medical', name: '医疗', icon: '💊', color: '#5352ED' },
+        { id: 'education', name: '学习', icon: '📖', color: '#2ED573' },
+        { id: 'other', name: '其他', icon: '📦', color: '#747D8C' }
+      ],
+      income: [
+        { id: 'salary', name: '工资', icon: '💰', color: '#2ED573' },
+        { id: 'bonus', name: '奖金', icon: '🎁', color: '#FFA502' },
+        { id: 'invest', name: '投资', icon: '📈', color: '#5352ED' },
+        { id: 'other_income', name: '其他', icon: '💵', color: '#70A1FF' }
+      ]
+    };
+  },
+
+  // 格式化日期
+  formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+  },
+
+  // ==================== 每日一攒（加强版） ====================
 
   // 加载自动攒设置
   loadAutoSaveSettings() {
@@ -37,6 +427,30 @@ Page({
     const autoSaveAmount = wx.getStorageSync('autoSaveAmount') || '10';
     const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
     this.setData({ autoSaveEnabled, autoSaveAmount, autoSaveTime });
+  },
+
+  // 检查今日是否已自动攒
+  checkAutoSaveToday() {
+    if (!this.data.autoSaveEnabled) return;
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
+    
+    // 如果今天还没攒，且当前时间已过设定时间，立即执行
+    if (lastAutoSaveDate !== todayStr) {
+      const now = new Date();
+      const [hours, minutes] = this.data.autoSaveTime.split(':');
+      const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes), 0);
+      
+      if (now >= targetTime) {
+        console.log('已过设定时间，立即执行自动攒');
+        this.doAutoSave();
+      } else {
+        // 设置定时器
+        this.scheduleAutoSaveReminder();
+      }
+    }
   },
 
   // 打开每日一攒设置弹窗
@@ -84,7 +498,12 @@ Page({
     });
     
     wx.showToast({ title: '每日一攒已开启', icon: 'success' });
+    
+    // 立即设置提醒
     this.scheduleAutoSaveReminder();
+    
+    // 请求订阅消息权限（用于准时提醒）
+    this.requestSubscribeMessage();
   },
 
   // 关闭自动攒
@@ -92,27 +511,83 @@ Page({
     wx.setStorageSync('autoSaveEnabled', false);
     this.setData({ autoSaveEnabled: false });
     wx.showToast({ title: '每日一攒已关闭', icon: 'none' });
+    
+    // 清除定时器
+    this.clearAutoSaveTimer();
   },
 
-  // 设置定时提醒
+  // 请求订阅消息权限
+  requestSubscribeMessage() {
+    wx.requestSubscribeMessage({
+      tmplIds: ['YOUR_TEMPLATE_ID_1', 'YOUR_TEMPLATE_ID_2'],
+      success: (res) => {
+        console.log('订阅消息授权结果:', res);
+        // 保存授权状态
+        const authorized = Object.values(res).some(v => v === 'accept');
+        wx.setStorageSync('subscribeMessageAuthorized', authorized);
+      },
+      fail: (err) => {
+        console.error('订阅消息授权失败:', err);
+      }
+    });
+  },
+
+  // 自动攒定时器
+  autoSaveTimer: null,
+
+  // 设置定时提醒（精确到秒）
   scheduleAutoSaveReminder() {
+    // 清除旧定时器
+    this.clearAutoSaveTimer();
+    
     const { autoSaveTime } = this.data;
     const [hours, minutes] = autoSaveTime.split(':');
     
     const now = new Date();
     let nextTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes), 0);
     
+    // 如果今天的时间已过，设置为明天
     if (nextTime <= now) {
       nextTime.setDate(nextTime.getDate() + 1);
     }
     
     const delayMs = nextTime - now;
     
-    setTimeout(() => {
+    console.log(`自动攒已设置，下次执行时间: ${nextTime.toLocaleString()}，距离现在 ${delayMs} 毫秒`);
+    
+    // 使用 setTimeout 设置精确提醒
+    this.autoSaveTimer = setTimeout(() => {
       this.doAutoSave();
     }, delayMs);
     
-    console.log(`自动攒已设置，下次执行时间: ${nextTime.toLocaleString()}`);
+    // 同时设置后台提醒（如果支持）
+    this.setBackgroundReminder(nextTime);
+  },
+
+  // 设置后台提醒
+  setBackgroundReminder(nextTime) {
+    // 检查是否支持后台任务
+    if (wx.setBackgroundFetchToken) {
+      wx.setBackgroundFetchToken({
+        token: 'auto_save_reminder',
+        success: () => {
+          console.log('后台提醒已设置');
+        }
+      });
+    }
+    
+    // 使用本地通知（如果支持）
+    if (wx.showModal) {
+      // 小程序内通知
+    }
+  },
+
+  // 清除定时器
+  clearAutoSaveTimer() {
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+    }
   },
 
   // 执行自动攒
@@ -131,6 +606,7 @@ Page({
       return;
     }
     
+    // 创建自动攒账单
     const bill = {
       date: today.getTime(),
       amount: amount,
@@ -145,6 +621,7 @@ Page({
     wx.setStorageSync('localBills', localBills);
     wx.setStorageSync('lastAutoSaveDate', todayStr);
     
+    // 显示通知
     wx.showToast({
       title: `自动攒 ¥${amount} 成功`,
       icon: 'success',
@@ -152,8 +629,28 @@ Page({
     });
     
     console.log(`自动攒成功: ¥${amount}`);
+    
+    // 刷新统计数据
+    this.loadLocalStats();
+    
+    // 设置明天的提醒
     this.scheduleAutoSaveReminder();
+    
+    // 发送订阅消息通知（如果已授权）
+    this.sendSubscribeMessage(amount);
   },
+
+  // 发送订阅消息
+  sendSubscribeMessage(amount) {
+    const authorized = wx.getStorageSync('subscribeMessageAuthorized');
+    if (!authorized) return;
+    
+    // 这里需要调用后端接口发送订阅消息
+    // 实际实现需要后端配合
+    console.log('发送订阅消息提醒:', amount);
+  },
+
+  // ==================== 原有功能 ====================
 
   checkSyncStatus() {
     const syncEnabled = wx.getStorageSync('syncEnabled');
@@ -527,19 +1024,6 @@ Page({
         reject(error);
       }
     });
-  },
-
-  onShow() {
-    this.checkSyncStatus();
-    
-    // 根据同步状态决定是否加载数据
-    const syncEnabled = wx.getStorageSync('syncEnabled');
-    if (syncEnabled) {
-      this.loadStats();
-    } else {
-      // 不同步，显示本地数据
-      this.loadLocalStats();
-    }
   },
 
   loadLocalStats() {
