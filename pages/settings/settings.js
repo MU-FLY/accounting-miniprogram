@@ -24,7 +24,9 @@ Page({
     // 导入导出
     showExportModal: false,
     showImportModal: false,
-    importFormatHint: ''
+    importFormatHint: '',
+    // 公众号
+    showOfficialModal: false
   },
 
   onLoad() {
@@ -1415,27 +1417,26 @@ Page({
 
   // 关注公众号
   followOfficialAccount() {
-    // 使用 official-account 组件展示关注卡片
-    // 组件会自动显示已关联的公众号
-    wx.showModal({
-      title: '关注公众号',
-      content: '请关注我们的公众号获取最新动态和使用技巧\n\n公众号：MU-FLY',
-      confirmText: '去关注',
-      cancelText: '知道了',
-      success: (res) => {
-        if (res.confirm) {
-          // 复制公众号名称，用户可搜索关注
-          wx.setClipboardData({
-            data: 'MU-FLY',
-            success: () => {
-              wx.showToast({
-                title: '已复制，请搜索关注',
-                icon: 'none',
-                duration: 2000
-              });
-            }
-          });
-        }
+    // 显示公众号图片弹窗
+    this.setData({ showOfficialModal: true });
+  },
+
+  // 关闭公众号弹窗
+  closeOfficialModal() {
+    this.setData({ showOfficialModal: false });
+  },
+
+  // 复制公众号名称
+  copyOfficialName() {
+    wx.setClipboardData({
+      data: 'MU-FLY',
+      success: () => {
+        wx.showToast({
+          title: '已复制，请搜索关注',
+          icon: 'none',
+          duration: 2000
+        });
+        this.closeOfficialModal();
       }
     });
   },

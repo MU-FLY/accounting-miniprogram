@@ -281,6 +281,25 @@
     </view>
   </view>
 
+  <!-- Official Account Modal -->
+  <view class="official-modal {{showOfficialModal ? 'show' : ''}}">
+    <view class="official-mask" bindtap="closeOfficialModal"></view>
+    <view class="official-content">
+      <view class="official-header">
+        <view class="official-title">关注公众号</view>
+        <view class="official-subtitle">长按识别二维码关注</view>
+      </view>
+      <view class="official-image-wrap">
+        <image src="/images/official-account.png" mode="aspectFit" class="official-qrcode" show-menu-by-longpress />
+      </view>
+      <view class="official-tip">长按图片识别二维码关注公众号</view>
+      <view class="official-buttons">
+        <button class="modal-btn modal-cancel" bindtap="closeOfficialModal">关闭</button>
+        <button class="modal-btn modal-confirm" bindtap="copyOfficialName">复制名称</button>
+      </view>
+    </view>
+  </view>
+
   <!-- Version -->
   <view class="version">版本 2.4.0</view>
 </view>
