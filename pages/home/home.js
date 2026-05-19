@@ -43,43 +43,46 @@ Page({
     this.initAndLoad();
   },
 
-  async onShow() {
+  onShow() {
     const syncEnabled = wx.getStorageSync('syncEnabled');
     this.setData({ syncEnabled: !!syncEnabled });
     
     // 先检查并执行自动攒，再加载数据
-    await this.checkAutoSaveAndRefresh();
-    
-    syncEnabled ? this.loadData() : this.loadLocalData();
+    this.checkAutoSaveAndRefresh();
   },
 
   // 检查自动攒并刷新数据
   checkAutoSaveAndRefresh() {
-    return new Promise((resolve) => {
-      const autoSaveEnabled = wx.getStorageSync('autoSaveEnabled');
-      if (!autoSaveEnabled) {
-        resolve();
-        return;
+    const autoSaveEnabled = wx.getStorageSync('autoSaveEnabled');
+    if (!autoSaveEnabled) {
+      this.loadDataAfterCheck();
+      return;
+    }
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
+    
+    // 今天还没攒过，检查时间是否已过
+    if (lastAutoSaveDate !== todayStr) {
+      const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
+      const [hours, minutes] = autoSaveTime.split(':');
+      const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+      
+      if (today >= targetTime) {
+        // 时间已过，执行自动攒
+        this.performAutoSave();
       }
-      
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
-      
-      // 今天还没攒过，检查时间是否已过
-      if (lastAutoSaveDate !== todayStr) {
-        const autoSaveTime = wx.getStorageSync('autoSaveTime') || '08:30';
-        const [hours, minutes] = autoSaveTime.split(':');
-        const targetTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
-        
-        if (today >= targetTime) {
-          // 时间已过，执行自动攒
-          this.performAutoSave();
-        }
-      }
-      
-      resolve();
-    });
+    }
+    
+    // 同步执行完后加载数据
+    this.loadDataAfterCheck();
+  },
+
+  // 加载数据（自动攒检查完后调用）
+  loadDataAfterCheck() {
+    const syncEnabled = wx.getStorageSync('syncEnabled');
+    syncEnabled ? this.loadData() : this.loadLocalData();
   },
 
   // 执行自动攒（首页版本）
