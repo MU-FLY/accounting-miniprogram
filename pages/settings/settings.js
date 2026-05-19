@@ -21,6 +21,7 @@ Page({
     autoSaveAmount: '10',
     autoSaveTime: '08:30',
     showAutoSaveModal: false,
+    todayAutoSaved: false,
     // 导入导出
     showExportModal: false,
     showImportModal: false,
@@ -445,7 +446,7 @@ Page({
     this.setData({ autoSaveEnabled, autoSaveAmount, autoSaveTime });
   },
 
-  // 检查今日是否已自动攒
+  // 检查今日是否已自动攒（用户进入时检查）
   checkAutoSaveToday() {
     if (!this.data.autoSaveEnabled) return;
     
@@ -453,20 +454,80 @@ Page({
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const lastAutoSaveDate = wx.getStorageSync('lastAutoSaveDate');
     
-    // 如果今天还没攒，且当前时间已过设定时间，立即执行
-    if (lastAutoSaveDate !== todayStr) {
-      const now = new Date();
-      const [hours, minutes] = this.data.autoSaveTime.split(':');
-      const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes), 0);
-      
-      if (now >= targetTime) {
-        console.log('已过设定时间，立即执行自动攒');
-        this.doAutoSave();
-      } else {
-        // 设置定时器
-        this.scheduleAutoSaveReminder();
-      }
+    // 今天已经攒过了
+    if (lastAutoSaveDate === todayStr) {
+      this.setData({ todayAutoSaved: true });
+      return;
     }
+    
+    const now = new Date();
+    const [hours, minutes] = this.data.autoSaveTime.split(':');
+    const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes), 0);
+    
+    // 时间已过，静默攒入（显示时间为设置的时间）
+    if (now >= targetTime) {
+      console.log('已过设定时间，静默执行自动攒');
+      this.performSilentAutoSave();
+    } else {
+      // 时间未到，显示提示并开始倒计时
+      this.showAutoSavePending();
+      this.scheduleAutoSaveReminder();
+    }
+  },
+
+  // 静默自动攒（时间已过，用户进入时执行）
+  performSilentAutoSave() {
+    const autoSaveAmount = wx.getStorageSync('autoSaveAmount') || '10';
+    const amount = parseFloat(autoSaveAmount);
+    
+    if (!amount || amount <= 0) return;
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
+    // 使用设置的时间作为账单时间
+    const [hours, minutes] = this.data.autoSaveTime.split(':');
+    const billTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+    
+    // 创建账单
+    const bill = {
+      date: billTime.getTime(),
+      amount: amount,
+      category: '每日一攒',
+      type: 'expense',
+      remark: '自动攒',
+      created_at: new Date().toISOString()
+    };
+    
+    const localBills = wx.getStorageSync('localBills') || [];
+    localBills.push(bill);
+    wx.setStorageSync('localBills', localBills);
+    wx.setStorageSync('lastAutoSaveDate', todayStr);
+    
+    this.setData({ todayAutoSaved: true });
+    
+    // 静默提示（不打扰用户）
+    wx.showToast({
+      title: `已自动攒 ¥${amount}`,
+      icon: 'success',
+      duration: 2000
+    });
+    
+    // 刷新统计数据
+    this.loadLocalStats();
+    
+    console.log(`静默自动攒成功: ¥${amount}, 时间: ${this.data.autoSaveTime}`);
+  },
+
+  // 显示自动攒待执行提示
+  showAutoSavePending() {
+    const { autoSaveTime, autoSaveAmount } = this.data;
+    
+    wx.showToast({
+      title: `今日 ${autoSaveTime} 将自动攒 ¥${autoSaveAmount}`,
+      icon: 'none',
+      duration: 3000
+    });
   },
 
   // 打开每日一攒设置弹窗
@@ -615,7 +676,7 @@ Page({
     }
   },
 
-  // 执行自动攒
+  // 执行自动攒（定时器触发）
   async doAutoSave() {
     const autoSaveAmount = wx.getStorageSync('autoSaveAmount') || '10';
     const amount = parseFloat(autoSaveAmount);
@@ -631,9 +692,13 @@ Page({
       return;
     }
     
+    // 使用设置的时间作为账单时间
+    const [hours, minutes] = this.data.autoSaveTime.split(':');
+    const billTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+    
     // 创建自动攒账单
     const bill = {
-      date: today.getTime(),
+      date: billTime.getTime(),
       amount: amount,
       category: '每日一攒',
       type: 'expense',
@@ -646,6 +711,8 @@ Page({
     wx.setStorageSync('localBills', localBills);
     wx.setStorageSync('lastAutoSaveDate', todayStr);
     
+    this.setData({ todayAutoSaved: true });
+    
     // 显示通知
     wx.showToast({
       title: `自动攒 ¥${amount} 成功`,
@@ -653,7 +720,7 @@ Page({
       duration: 2000
     });
     
-    console.log(`自动攒成功: ¥${amount}`);
+    console.log(`自动攒成功: ¥${amount}, 时间: ${this.data.autoSaveTime}`);
     
     // 刷新统计数据
     this.loadLocalStats();

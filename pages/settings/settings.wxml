@@ -109,7 +109,7 @@
       <view class="menu-status" wx:if="{{autoSaveEnabled}}">
         <view class="status-badge active">
           <text class="status-dot"></text>
-          <text class="status-text">已开启</text>
+          <text class="status-text">{{todayAutoSaved ? '今日已攒' : '已开启'}}</text>
         </view>
       </view>
       <view class="menu-status" wx:if="{{!autoSaveEnabled}}">
