@@ -469,8 +469,7 @@ Page({
       console.log('已过设定时间，静默执行自动攒');
       this.performSilentAutoSave();
     } else {
-      // 时间未到，显示提示并开始倒计时
-      this.showAutoSavePending();
+      // 时间未到，只设置定时器，不提示
       this.scheduleAutoSaveReminder();
     }
   },
@@ -519,16 +518,7 @@ Page({
     console.log(`静默自动攒成功: ¥${amount}, 时间: ${this.data.autoSaveTime}`);
   },
 
-  // 显示自动攒待执行提示
-  showAutoSavePending() {
-    const { autoSaveTime, autoSaveAmount } = this.data;
-    
-    wx.showToast({
-      title: `今日 ${autoSaveTime} 将自动攒 ¥${autoSaveAmount}`,
-      icon: 'none',
-      duration: 3000
-    });
-  },
+
 
   // 打开每日一攒设置弹窗
   openAutoSaveSetting() {
