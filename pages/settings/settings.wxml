@@ -81,22 +81,22 @@
     <!-- 数据管理 -->
     <view class="menu-section-title">数据管理</view>
     <view class="menu-item" bindtap="showExportModal">
-      <view class="menu-icon">📤</view>
+      <view class="menu-icon icon-export">📋</view>
       <text class="menu-text">一键导出</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="showImportModal">
-      <view class="menu-icon">📥</view>
+      <view class="menu-icon icon-import">📂</view>
       <text class="menu-text">一键导入</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="syncData">
-      <view class="menu-icon">☁️</view>
+      <view class="menu-icon icon-sync">🔄</view>
       <text class="menu-text">同步云端数据</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="uploadToCloud">
-      <view class="menu-icon">⬆️</view>
+      <view class="menu-icon icon-upload">☁️</view>
       <text class="menu-text">一键上传云端</text>
       <text class="arrow-right">›</text>
     </view>
@@ -104,7 +104,7 @@
     <!-- 工具 -->
     <view class="menu-section-title">工具</view>
     <view class="menu-item" bindtap="openAutoSaveSetting">
-      <view class="menu-icon">💰</view>
+      <view class="menu-icon icon-save">🏦</view>
       <text class="menu-text">每日一攒</text>
       <view class="menu-status" wx:if="{{autoSaveEnabled}}">
         <view class="status-badge active">
@@ -123,27 +123,27 @@
     <!-- 设置 -->
     <view class="menu-section-title">设置</view>
     <view class="menu-item" bindtap="clearData">
-      <view class="menu-icon">🗑️</view>
+      <view class="menu-icon icon-clear">🧹</view>
       <text class="menu-text">清除本地缓存</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item menu-item-danger" bindtap="resetAllData">
-      <view class="menu-icon">⚠️</view>
+      <view class="menu-icon icon-danger">🗑️</view>
       <text class="menu-text">一键清理云端</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="goFeedback">
-      <view class="menu-icon">💬</view>
+      <view class="menu-icon icon-feedback">✉️</view>
       <text class="menu-text">意见反馈</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item" bindtap="followOfficialAccount">
-      <view class="menu-icon">📢</view>
+      <view class="menu-icon icon-official">📢</view>
       <text class="menu-text">关注公众号</text>
       <text class="arrow-right">›</text>
     </view>
     <view class="menu-item menu-item-danger" bindtap="logout" wx:if="{{userInfo}}">
-      <view class="menu-icon">🚪</view>
+      <view class="menu-icon icon-logout">🚪</view>
       <text class="menu-text">退出登录</text>
       <text class="arrow-right">›</text>
     </view>
@@ -151,7 +151,7 @@
     <!-- 关于 -->
     <view class="menu-section-title">关于</view>
     <view class="menu-item" bindtap="goAbout">
-      <view class="menu-icon">ℹ️</view>
+      <view class="menu-icon icon-about">ⓘ</view>
       <text class="menu-text">关于随手记</text>
       <text class="arrow-right">›</text>
     </view>
